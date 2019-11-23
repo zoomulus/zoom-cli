@@ -1,2 +1,2 @@
-# zoom-cli
-Cloud-native command line interface
+# zoomulus-cli
+Zoomulus command line interface framework
