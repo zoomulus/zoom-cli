@@ -17,9 +17,30 @@
 
 package com.zoomulus.cli;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
+/**
+ * Commands for the Zoomulus {@link CLI}.
+ */
 public interface Command {
-    List<String> getNames();
-    boolean run(List<String> args);
+    /**
+     * Returns the command names.  These are the names that will be used to run the command.  For example, a command to
+     * exit the program might have the name "exit" - this is what a user would type to execute the command.
+     *
+     * A list is returned to allow a command to provide multiple names for the command.  For example, the "exit" command
+     * might also allow the names "quit" and "bye" to be used.  Any of the names provided will execute the command.
+     * @return The list of command names
+     */
+    @NotNull List<String> getNames();
+
+    /**
+     * Executes the command.
+     *
+     * @param commandName The command name that was used to select the command.
+     * @param args The command-line arguments provided to the command.
+     * @return false if the CLI should exit; true otherwise.  Most commands will return true.
+     */
+    boolean run(@NotNull final String commandName, @NotNull final List<String> args);
 }
