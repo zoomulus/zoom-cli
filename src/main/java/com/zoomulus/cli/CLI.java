@@ -23,13 +23,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
+import com.google.inject.Injector;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,23 +50,14 @@ public class CLI {
     private Set<String> helpStrings = Sets.newHashSet("?", "help");
     private Map<String, Command> commands = Maps.newHashMap();
 
+    private final Injector injector;
+
     /**
      * Construct an empty CLI instance.
      */
-    public CLI() {
-    }
-
-    /**
-     * Construct a CLI instance with the provided prompt and commands.
-     *
-     * @param prompt String that will be shown as the CLI prompt.
-     * @param commands List of {@link Command}s to be added to the CLI.
-     */
-    public CLI(@NotNull final String prompt, @NotNull final List<Command> commands) {
-        this.prompt = prompt;
-        for (Command command : commands) {
-            addCommand(command);
-        }
+    @Inject
+    public CLI(@NotNull final Injector injector) {
+        this.injector = injector;
     }
 
     private void addCommand(@NotNull final Command command) {
@@ -124,17 +116,11 @@ public class CLI {
     public CLI findCommandsRecursive(@NotNull final String packageName) throws IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         for (ClassPath.ClassInfo classInfo : ClassPath.from(classLoader).getTopLevelClassesRecursive(packageName)) {
-            String className = classInfo.getName();
-            try {
-                Class c = classInfo.load();
-                if (Command.class.isAssignableFrom(c)) {
-                    LOG.info("Found command {}", c.getCanonicalName());
-                    Command command = (Command) c.getDeclaredConstructor().newInstance();
-                    addCommand(command);
-                }
-            }
-            catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e2) {
-                LOG.debug("Unable to load class '{}' - no suitable constructor found", className, e2);
+            Class c = classInfo.load();
+            if (Command.class.isAssignableFrom(c)) {
+                LOG.info("Found command {}", c.getCanonicalName());
+                Command command = (Command) injector.getInstance(c);
+                addCommand(command);
             }
         }
 
@@ -181,6 +167,16 @@ public class CLI {
                 }
             }
         }
+        shutdown();
+    }
+
+    /**
+     * Called when the CLI is shutting down.
+     *
+     * Override this method to perform cleanup as the application is shutting down.
+     */
+    public void shutdown() {
+
     }
 
     private void printHelp(@NotNull final PrintStream out) {
