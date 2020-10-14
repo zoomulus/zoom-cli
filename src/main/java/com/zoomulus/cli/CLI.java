@@ -49,6 +49,7 @@ public class CLI {
     private String prompt;
     private Set<String> helpStrings = Sets.newHashSet("?", "help");
     private Map<String, Command> commands = Maps.newHashMap();
+    private CommandContext commandContext;
 
     private final Injector injector;
 
@@ -98,6 +99,11 @@ public class CLI {
      */
     public CLI withCommand(@NotNull final Command command) {
         addCommand(command);
+        return this;
+    }
+
+    public CLI withConmmandContext(@NotNull final CommandContext commandContext) {
+        this.commandContext = commandContext;
         return this;
     }
 
@@ -161,7 +167,7 @@ public class CLI {
                             out.println(command.getLongDescription().get());
                         }
                     }
-                    else if (!command.run(commandName, args, out, err)) {
+                    else if (!command.run(commandContext.update(commandName, args), out, err)) {
                         break;
                     }
                 }

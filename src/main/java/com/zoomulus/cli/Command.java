@@ -55,14 +55,12 @@ public interface Command {
     /**
      * Executes the command.
      *
-     * @param commandName The command name that was used to select the command.
-     * @param args The command-line arguments provided to the command.
+     * @param context The command context.
      * @param out A {@link PrintStream} for writing standard output.
      * @param err A {@link PrintStream} for writing error output.
      * @return false if the CLI should exit; true otherwise.  Most commands will return true.
      */
-    boolean run(@NotNull final String commandName,
-                @NotNull final List<String> args,
+    boolean run(@NotNull final CommandContext context,
                 @NotNull final PrintStream out,
                 @NotNull final PrintStream err);
 }
